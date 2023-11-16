@@ -263,9 +263,17 @@ func (p *ProgressbarPrinter) Add(count int) *ProgressbarPrinter {
 	return p
 }
 
+func (p ProgressbarPrinter) cursor() *cursor.Cursor {
+	c := cursor.Cursor{}
+	if writer, ok := p.Writer.(cursor.Writer); ok {
+		c.WithWriter(writer)
+	}
+	return &c
+}
+
 // Start the ProgressbarPrinter.
 func (p ProgressbarPrinter) Start(title ...interface{}) (*ProgressbarPrinter, error) {
-	cursor.Hide()
+	p.cursor().Hide()
 	if RawOutput && p.ShowTitle {
 		Fprintln(p.Writer, p.Title)
 	}
@@ -293,7 +301,7 @@ func (p *ProgressbarPrinter) Stop() (*ProgressbarPrinter, error) {
 	if p.rerenderTask != nil && p.rerenderTask.IsActive() {
 		p.rerenderTask.Stop()
 	}
-	cursor.Show()
+	p.cursor().Show()
 
 	if !p.IsActive {
 		return p, nil
